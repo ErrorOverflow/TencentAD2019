@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # data\\totalExposureLog.out
 # data\\user_data
@@ -10,27 +11,34 @@ totalExposure = pd.DataFrame(
              'expo_quality_ecpm',
              'expo_total_ecpm'])
 
-ad_static_feature = pd.DataFrame(['AD_id', 'time', 'account_id', 'product_id', 'product_class', 'industry_id', 'size'])
+ad_static_feature = pd.DataFrame(
+    columns=['AD_id', 'time', 'account_id', 'product_id', 'product_class', 'industry_id', 'size'])
 
 user = pd.DataFrame(
-    ['user_id', 'age', 'gender', 'area', 'status', 'education', 'consumption_ability', 'device', 'work', 'connect_type',
-     'behavior'])
+    columns=['user_id', 'age', 'gender', 'area', 'status', 'education', 'consumption_ability', 'device', 'work',
+             'connect_type',
+             'behavior'])
 
-with open('data\\totalExposure', 'r', encoding='utf-8') as f:
-    new = open('data\\ad_static_feature.csv', 'w')
-    i = 0
-    for line in f:
-        if i % 1000000 == 0:
-            print(i, line)
-        if i == 0:
-            new.write(
-                'AD_id,time,AD_loc_id,user_id,expo_id,expo_size,expo_bid,expo_pctr,expo_quality_ecpm,expo_total_ecpm\n')
-            lineContent = line.split('m')
-            print(lineContent[len(lineContent) - 1])
-            new.write(lineContent[len(lineContent) - 1])
-        else:
-            new.write(line)
-        i += 1
+ADExposure = pd.DataFrame(columns=['num'])
+
+
+def preTotalExposure():
+    with open('data\\totalExposure', 'r', encoding='utf-8') as f:
+        new = open('data\\ad_static_feature.csv', 'w')
+        i = 0
+        for line in f:
+            if i % 1000000 == 0:
+                print(i, line)
+            if i == 0:
+                new.write(
+                    'AD_id,time,AD_loc_id,user_id,expo_id,expo_size,expo_bid,expo_pctr,expo_quality_ecpm,'
+                    'expo_total_ecpm\n')
+                lineContent = line.split('m')
+                print(lineContent[len(lineContent) - 1])
+                new.write(lineContent[len(lineContent) - 1])
+            else:
+                new.write(line)
+            i += 1
 
 
 def preADStatic():
@@ -88,3 +96,24 @@ def preUser():
             if i % 100000 == 0:
                 print(i, line)
             i += 1
+
+
+def countTotalExposure():
+    with open('data\\totalExposure.csv', 'r', encoding='utf-8') as f:
+        i = 0
+        for line in f:
+            print(line)
+            line = line.replace('\n', '')
+            lineContent = line.split('\t')
+            if i % 100000 == 0:
+                print(lineContent[0])
+            try:
+                ADExposure.loc[lineContent[0]] = ADExposure.loc[lineContent[0]] + 1
+            except:
+                ADExposure.loc[lineContent[0]] = 0
+            i += 1
+
+
+
+countTotalExposure()
+print(ADExposure.index.is_unique)
